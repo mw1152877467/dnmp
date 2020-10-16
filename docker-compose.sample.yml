@@ -1,4 +1,4 @@
-version: "3"
+version: "3.3"
 services:
   nginx:
     build:
@@ -7,7 +7,7 @@ services:
         NGINX_VERSION: nginx:${NGINX_VERSION}
         CONTAINER_PACKAGE_URL: ${CONTAINER_PACKAGE_URL}
         NGINX_INSTALL_APPS: ${NGINX_INSTALL_APPS}
-    container_name: nginx
+    container_name: dnmp-nginx
     ports:
       - "${NGINX_HTTP_HOST_PORT}:80"
       - "${NGINX_HTTPS_HOST_PORT}:443"
@@ -33,7 +33,7 @@ services:
         CONTAINER_PACKAGE_URL: ${CONTAINER_PACKAGE_URL}
         PHP_EXTENSIONS: ${PHP_EXTENSIONS}
         TZ: "$TZ"
-    container_name: php
+    container_name: dnmp-php
     expose:
       - 9501
     extra_hosts:
@@ -50,53 +50,53 @@ services:
     networks:
       - default
 
-#  php56:
-#    build:
-#      context: ./services/php
-#      args:
-#        PHP_VERSION: php:${PHP56_VERSION}-fpm-alpine
-#        CONTAINER_PACKAGE_URL: ${CONTAINER_PACKAGE_URL}
-#        PHP_EXTENSIONS: ${PHP56_EXTENSIONS}
-#        TZ: "$TZ"
-#    container_name: php56
-#    expose:
-#      - 9501
-#    volumes:
-#      - ${SOURCE_DIR}:/www/:rw
-#      - ${PHP56_PHP_CONF_FILE}:/usr/local/etc/php/php.ini:ro
-#      - ${PHP56_FPM_CONF_FILE}:/usr/local/etc/php-fpm.d/www.conf:rw
-#      - ${PHP56_LOG_DIR}:/var/log/php
-#      - ${DATA_DIR}/composer:/tmp/composer
-#    restart: always
-#    cap_add:
-#      - SYS_PTRACE
-#    networks:
-#      - default
+  php56:
+    build:
+      context: ./services/php
+      args:
+        PHP_VERSION: php:${PHP56_VERSION}-fpm-alpine
+        CONTAINER_PACKAGE_URL: ${CONTAINER_PACKAGE_URL}
+        PHP_EXTENSIONS: ${PHP56_EXTENSIONS}
+        TZ: "$TZ"
+    container_name: dnmp-php56
+    expose:
+      - 9501
+    volumes:
+      - ${SOURCE_DIR}:/www/:rw
+      - ${PHP56_PHP_CONF_FILE}:/usr/local/etc/php/php.ini:ro
+      - ${PHP56_FPM_CONF_FILE}:/usr/local/etc/php-fpm.d/www.conf:rw
+      - ${PHP56_LOG_DIR}:/var/log/php
+      - ${DATA_DIR}/composer:/tmp/composer
+    restart: always
+    cap_add:
+      - SYS_PTRACE
+    networks:
+      - default
 
-#  php54:
-#    build:
-#      context: ./services/php54
-#      args:
-#        PHP_VERSION: php:${PHP54_VERSION}-fpm
-#        CONTAINER_PACKAGE_URL: ${CONTAINER_PACKAGE_URL}
-#        PHP_EXTENSIONS: ${PHP54_EXTENSIONS}
-#        TZ: "$TZ"
-#    container_name: php54
-#    volumes:
-#      - ${SOURCE_DIR}:/www/:rw
-#      - ${PHP54_PHP_CONF_FILE}:/usr/local/etc/php/php.ini:ro
-#      - ${PHP54_FPM_CONF_FILE}:/usr/local/etc/php-fpm.d/www.conf:rw
-#      - ${PHP54_LOG_DIR}:/var/log/php
-#      - ${DATA_DIR}/composer:/tmp/composer
-#    restart: always
-#    cap_add:
-#      - SYS_PTRACE
-#    networks:
-#      - default
+  php54:
+    build:
+      context: ./services/php54
+      args:
+        PHP_VERSION: php:${PHP54_VERSION}-fpm
+        CONTAINER_PACKAGE_URL: ${CONTAINER_PACKAGE_URL}
+        PHP_EXTENSIONS: ${PHP54_EXTENSIONS}
+        TZ: "$TZ"
+    container_name: dnmp-php54
+    volumes:
+      - ${SOURCE_DIR}:/www/:rw
+      - ${PHP54_PHP_CONF_FILE}:/usr/local/etc/php/php.ini:ro
+      - ${PHP54_FPM_CONF_FILE}:/usr/local/etc/php-fpm.d/www.conf:rw
+      - ${PHP54_LOG_DIR}:/var/log/php
+      - ${DATA_DIR}/composer:/tmp/composer
+    restart: always
+    cap_add:
+      - SYS_PTRACE
+    networks:
+      - default
 
   mysql:
     image: mysql:${MYSQL_VERSION}
-    container_name: mysql
+    container_name: dnmp-mysql
     ports:
       - "${MYSQL_HOST_PORT}:3306"
     volumes:
@@ -109,24 +109,24 @@ services:
       MYSQL_ROOT_PASSWORD: "${MYSQL_ROOT_PASSWORD}"
       TZ: "$TZ"
 
-#  mysql5:
-#    image: mysql:${MYSQL5_VERSION}
-#    container_name: mysql5
-#    ports:
-#      - "${MYSQL5_HOST_PORT}:3306"
-#    volumes:
-#      - ${MYSQL5_CONF_FILE}:/etc/mysql/conf.d/mysql.cnf:ro
-#      - ${DATA_DIR}/mysql5:/var/lib/mysql/:rw
-#    restart: always
-#    networks:
-#      - default
-#    environment:
-#      MYSQL_ROOT_PASSWORD: "${MYSQL5_ROOT_PASSWORD}"
-#      TZ: "$TZ"
+  mysql5:
+    image: mysql:${MYSQL5_VERSION}
+    container_name: dnmp-mysql5
+    ports:
+      - "${MYSQL5_HOST_PORT}:3306"
+    volumes:
+      - ${MYSQL5_CONF_FILE}:/etc/mysql/conf.d/mysql.cnf:ro
+      - ${DATA_DIR}/mysql5:/var/lib/mysql/:rw
+    restart: always
+    networks:
+      - default
+    environment:
+      MYSQL_ROOT_PASSWORD: "${MYSQL5_ROOT_PASSWORD}"
+      TZ: "$TZ"
 
 #  openresty:
 #    image:  openresty/openresty:${OPENRESTY_VERSION}
-#    container_name: openresty
+#    container_name: dnmp-openresty
 #    ports:
 #       - "${OPENRESTY_HTTP_HOST_PORT}:80"
 #       - "${OPENRESTY_HTTPS_HOST_PORT}:443"
@@ -143,24 +143,24 @@ services:
 #    networks:
 #      - default
 
-#  redis:
-#    image: redis:${REDIS_VERSION}
-#    container_name: redis
-#    ports:
-#      - "${REDIS_HOST_PORT}:6379"
-#    volumes:
-#      - ${REDIS_CONF_FILE}:/etc/redis.conf:ro
-#      - ${DATA_DIR}/redis:/data/:rw
-#    restart: always
-#    entrypoint: ["redis-server", "/etc/redis.conf"]
-#    environment:
-#      TZ: "$TZ"
-#    networks:
-#      - default
+  redis:
+    image: redis:${REDIS_VERSION}
+    container_name: dnmp-redis
+    ports:
+      - "${REDIS_HOST_PORT}:6379"
+    volumes:
+      - ${REDIS_CONF_FILE}:/etc/redis.conf:ro
+      - ${DATA_DIR}/redis:/data/:rw
+    restart: always
+    entrypoint: ["redis-server", "/etc/redis.conf"]
+    environment:
+      TZ: "$TZ"
+    networks:
+      - default
 
 #  memcached:
 #    image: memcached:${MEMCACHED_VERSION}
-#    container_name: memcached
+#    container_name: dnmp-memcached
 #    ports:
 #      - "${MEMCACHED_HOST_PORT}:11211"
 #    environment:
@@ -170,7 +170,7 @@ services:
 
 #  rabbitmq:
 #    image: rabbitmq:${RABBITMQ_VERSION}
-#    container_name: rabbitmq
+#    container_name: dnmp-rabbitmq
 #    restart: always
 #    ports:
 #      - "${RABBITMQ_HOST_PORT_C}:5672"
@@ -184,7 +184,7 @@ services:
 
 #  phpmyadmin:
 #    image: phpmyadmin/phpmyadmin:latest
-#    container_name: phpmyadmin
+#    container_name: dnmp-phpmyadmin
 #    ports:
 #      - "${PHPMYADMIN_HOST_PORT}:80"
 #    volumes:
@@ -199,7 +199,7 @@ services:
 
 #  phpredisadmin:
 #    image: erikdubbelboer/phpredisadmin:latest
-#    container_name: phpredisadmin
+#    container_name: dnmp-phpredisadmin
 #    ports:
 #      - "${REDISMYADMIN_HOST_PORT}:80"
 #    networks:
@@ -211,7 +211,7 @@ services:
 
 #  mongodb:
 #    image: mongo:${MONGODB_VERSION}
-#    container_name: mongodb
+#    container_name: dnmp-mongodb
 #    environment:
 #        MONGO_INITDB_ROOT_USERNAME: "${MONGODB_INITDB_ROOT_USERNAME}"
 #        MONGO_INITDB_ROOT_PASSWORD: "${MONGODB_INITDB_ROOT_PASSWORD}"
@@ -228,7 +228,7 @@ services:
 
 #  adminmongo:
 #    image: mrvautin/adminmongo
-#    container_name: adminmongo
+#    container_name: dnmp-adminmongo
 #    ports:
 #      - "${ADMINMONGO_HOST_PORT}:1234"
 #    environment:
@@ -244,7 +244,7 @@ services:
 #      args:
 #        ELASTICSEARCH_VERSION: ${ELASTICSEARCH_VERSION}
 #        ELASTICSEARCH_PLUGINS: ${ELASTICSEARCH_PLUGINS}
-#    container_name: elasticsearch
+#    container_name: dnmp-elasticsearch
 #    environment:
 #      - TZ=$TZ
 #      - discovery.type=single-node
@@ -260,7 +260,7 @@ services:
 
 #  kibana:
 #    image: kibana:${KIBANA_VERSION}
-#    container_name: kibana
+#    container_name: dnmp-kibana
 #    environment:
 #      TZ: "$TZ"
 #      elasticsearch.hosts: http://elasticsearch:9200
@@ -274,7 +274,7 @@ services:
 
 #  logstash:
 #    image: logstash:${LOGSTASH_VERSION}
-#    container_name: logstash
+#    container_name: dnmp-logstash
 #    hostname: logstash
 #    restart: always
 #    depends_on:
@@ -298,14 +298,13 @@ services:
 #    stdin_open: true
 #    tty: true
 
-
 #  supervisor:
 #    build:
 #      context: ./services/supervisor
 #      args:
 #        ALPINE_VERSION: alpine:${ALPINE_VERSION}
 #        TZ: "$TZ"
-#    container_name: supervisor
+#    container_name: dnmp-supervisor
 #    ports:
 #      - "${SUPERVISOR_HOST_PORT_C}:9001"
 #    volumes:
