@@ -10,6 +10,7 @@ services:
     container_name: dnmp-nginx
     ports:
       - "${NGINX_HTTP_HOST_PORT}:80"
+      - "9200-9240:9200-9240"
       - "${NGINX_HTTPS_HOST_PORT}:443"
     volumes:
       - ${SOURCE_DIR}:/www/:rw
@@ -43,6 +44,31 @@ services:
       - ${PHP_PHP_CONF_FILE}:/usr/local/etc/php/php.ini:ro
       - ${PHP_FPM_CONF_FILE}:/usr/local/etc/php-fpm.d/www.conf:rw
       - ${PHP_LOG_DIR}:/var/log/php
+      - ${DATA_DIR}/composer:/tmp/composer
+    restart: always
+    cap_add:
+      - SYS_PTRACE
+    networks:
+      - default
+
+  php8:
+    build:
+      context: ./services/php8
+      args:
+        PHP_VERSION: php:${PHP8_VERSION}-fpm-alpine
+        CONTAINER_PACKAGE_URL: ${CONTAINER_PACKAGE_URL}
+        PHP_EXTENSIONS: ${PHP8_EXTENSIONS}
+        TZ: "$TZ"
+    container_name: dnmp-php8
+    expose:
+      - 9501
+    extra_hosts:
+      - "www.site1.com:172.17.0.1"
+    volumes:
+      - ${SOURCE_DIR}:/www/:rw
+      - ${PHP8_PHP_CONF_FILE}:/usr/local/etc/php/php.ini:ro
+      - ${PHP8_FPM_CONF_FILE}:/usr/local/etc/php-fpm.d/www.conf:rw
+      - ${PHP8_LOG_DIR}:/var/log/php
       - ${DATA_DIR}/composer:/tmp/composer
     restart: always
     cap_add:
@@ -94,12 +120,26 @@ services:
     networks:
       - default
 
+  hyperf:
+    build:
+        context: ./services/hyperf
+    container_name: dnmp-hyperf
+    tty: true
+    expose:
+        - 9601
+    volumes:
+        - ${SOURCE_DIR}:/root/workspace/:rw
+    restart: always
+    networks:
+        - default
+
   mysql:
     image: mysql:${MYSQL_VERSION}
     container_name: dnmp-mysql
     ports:
       - "${MYSQL_HOST_PORT}:3306"
     volumes:
+      - ${SOURCE_DIR}:/www/:rw
       - ${MYSQL_CONF_FILE}:/etc/mysql/conf.d/mysql.cnf:ro
       - ${DATA_DIR}/mysql:/var/lib/mysql/:rw
     restart: always
@@ -108,6 +148,7 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: "${MYSQL_ROOT_PASSWORD}"
       TZ: "$TZ"
+      LANG: "C.UTF-8"
 
   mysql5:
     image: mysql:${MYSQL5_VERSION}
@@ -182,20 +223,21 @@ services:
 #    networks:
 #          - default
 
-#  phpmyadmin:
-#    image: phpmyadmin/phpmyadmin:latest
-#    container_name: dnmp-phpmyadmin
-#    ports:
-#      - "${PHPMYADMIN_HOST_PORT}:80"
-#    volumes:
-#      - ${PHPMYADMIN_USER_CONF_FILE}:/etc/phpmyadmin/config.user.inc.php:ro
-#      - ${PHPMYADMIN_PHP_CONF_FILE}:/usr/local/etc/php/conf.d/php-phpmyadmin.ini:ro
-#    networks:
-#      - default
-#    environment:
-#      - PMA_HOST=mysql
-#      - PMA_PORT=3306
-#      - TZ=$TZ
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin:latest
+    container_name: dnmp-phpmyadmin
+    ports:
+      - "${PHPMYADMIN_HOST_PORT}:80"
+    volumes:
+      - ${PHPMYADMIN_USER_CONF_FILE}:/etc/phpmyadmin/config.user.inc.php:ro
+      - ${PHPMYADMIN_PHP_CONF_FILE}:/usr/local/etc/php/conf.d/php-phpmyadmin.ini:ro
+    restart: always
+    networks:
+      - default
+    environment:
+      - PMA_HOST=mysql
+      - PMA_PORT=3306
+      - TZ=$TZ
 
 #  phpredisadmin:
 #    image: erikdubbelboer/phpredisadmin:latest
